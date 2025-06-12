@@ -6,6 +6,7 @@ import {
   GraphQLList,
   GraphQLInt,
   GraphQLNonNull,
+  GraphQLBoolean,
 } from 'graphql';
 
 // Sample data
@@ -37,8 +38,8 @@ const PersonType = new GraphQLObjectType({
 const PageInfoType = new GraphQLObjectType({
   name: 'PageInfo',
   fields: {
-    hasNextPage: { type: new GraphQLNonNull(GraphQLString) },
-    hasPreviousPage: { type: new GraphQLNonNull(GraphQLString) },
+    hasNextPage: { type: new GraphQLNonNull(GraphQLBoolean) },
+    hasPreviousPage: { type: new GraphQLNonNull(GraphQLBoolean) },
     startCursor: { type: GraphQLString },
     endCursor: { type: GraphQLString },
   },
@@ -80,8 +81,8 @@ const QueryType = new GraphQLObjectType({
           return {
             edges: [],
             pageInfo: {
-              hasNextPage: startIndex < total ? 'true' : 'false',
-              hasPreviousPage: startIndex > 0 ? 'true' : 'false',
+              hasNextPage: startIndex < total ? true : false,
+              hasPreviousPage: startIndex > 0 ? true : false,
               startCursor: null,
               endCursor: null,
             },
@@ -100,8 +101,8 @@ const QueryType = new GraphQLObjectType({
         return {
           edges,
           pageInfo: {
-            hasNextPage: endIndex < total ? 'true' : 'false',
-            hasPreviousPage: startIndex > 0 ? 'true' : 'false',
+            hasNextPage: endIndex < total ? true : false,
+            hasPreviousPage: startIndex > 0 ? true : false,
             startCursor: edges.length > 0 ? edges[0].cursor : null,
             endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : null,
           },
