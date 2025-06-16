@@ -19,7 +19,7 @@ import { relayStylePagination } from "@apollo/client/utilities";
 
 const ZERO_PEOPLE = gql`
   query ZeroPeople {
-    people(first: 0) {
+    people(first: 3) @connection(key:"empty") {
           pageInfo {
         hasNextPage
         hasPreviousPage
@@ -27,6 +27,7 @@ const ZERO_PEOPLE = gql`
         endCursor
       }
       edges {
+        cursor
         node {
           id
         }
@@ -37,7 +38,7 @@ const ZERO_PEOPLE = gql`
 
 const SOME_PEOPLE = gql`
   query SomePeople {
-    people(first: 3) {
+    people(first: 3) @connection(key:"Good") {
       pageInfo {  
         hasNextPage
         hasPreviousPage

@@ -73,7 +73,30 @@ const QueryType = new GraphQLObjectType({
         first: { type: GraphQLInt },
         after: { type: GraphQLString },
       },
-      resolve: (_, { first, after }) => {
+      resolve: (_, { first, after }, __, info) => {
+        // Check if name field is requested
+        const nameFieldRequested = info.fieldNodes[0].selectionSet.selections
+          .find(selection => selection.name.value === 'edges')
+          ?.selectionSet.selections
+          .find(selection => selection.name.value === 'node')
+          ?.selectionSet.selections
+          .some(selection => selection.name.value === 'name');
+
+        console.log("resolve");
+
+        if (!nameFieldRequested) {
+          console.log("empty");
+          return {
+            edges: [],
+            pageInfo: {
+              hasNextPage: false,
+              hasPreviousPage: false,
+              startCursor: null,
+              endCursor: null,
+            },
+          };
+        }
+
         const total = peopleData.length;
         const startIndex = after ? decodeCursor(after) + 1 : 0;
 
