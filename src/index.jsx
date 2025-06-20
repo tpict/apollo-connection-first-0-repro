@@ -17,9 +17,9 @@ import { Layout } from "./layout.jsx";
 import "./index.css";
 import { relayStylePagination } from "@apollo/client/utilities";
 
-const ZERO_PEOPLE = gql`
-  query ZeroPeople {
-    people(first: 3) @connection(key:"empty") {
+const PEOPLE_DOCUMENT = gql`
+  query People($search: String!) {
+    people(search: $search)  {
           pageInfo {
         hasNextPage
         hasPreviousPage
@@ -36,55 +36,36 @@ const ZERO_PEOPLE = gql`
   }
 `;
 
-const SOME_PEOPLE = gql`
-  query SomePeople {
-    people(first: 3) @connection(key:"Good") {
-      pageInfo {  
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-      }
-      edges {
-        cursor
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-function Inner() {
-  const { loading, data, error, networkStatus } = useQuery(SOME_PEOPLE)
-  const [hasHitNetwork, setHasHitNetwork] = useState(false);
-  useEffect(() => {
-    if (networkStatus !== 7) {
-      setHasHitNetwork(true)
-    }
-  }, [networkStatus])
-  if (!data) {
-    return JSON.stringify(error);
-  };
-  const results = <pre>{JSON.stringify(data.people.edges)}</pre>;
-
-  if (hasHitNetwork) {
-    return <>Hit the network for 3 people: {results}</>
-  }
-
-  return <>Didn't hit the network for 3 people!: {results}</>
-}
 
 function App() {
-  const { loading, data } = useQuery(ZERO_PEOPLE);
+  const { loading, data, refetch, variables, } = useQuery(PEOPLE_DOCUMENT, {
+    // notifyOnNetworkStatusChange: true,
+    variables: {
+      search: "smith"
+    }
+  });
   if (loading) {
     return "Loading...";
   }
 
-  return <>Loaded zero people: <pre>{JSON.stringify(data.people.edges)}</pre>
-  <Inner />
-  </>
+  return <>
+    <p>Results:
+  <code>{JSON.stringify(data)}</code>
+    </p>
+
+    <p>
+    <code>variables</code> says you searched for {variables.search}
+  </p>
+
+    <button onClick={() => refetch({ search: "smith" })}>{`Search "smith"`}</button>
+    <button onClick={() => refetch({ search: "budd" })}>{`Search "budd"`}</button>
+    <button onClick={() => refetch({ search: "jones" })}>{`Search "jones"`}</button>
+    <button onClick={() => refetch({ search: "jefferson" })}>{`Search "jefferson"`}</button>
+
+    <p>
+    To reproduce the issue, click between the {`"jones"`} and {`"jefferson"`} buttons
+  </p>
+    </>
 }
 
 const client = new ApolloClient({

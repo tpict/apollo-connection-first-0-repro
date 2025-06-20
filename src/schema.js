@@ -72,33 +72,20 @@ const QueryType = new GraphQLObjectType({
       args: {
         first: { type: GraphQLInt },
         after: { type: GraphQLString },
+        search: { type: GraphQLString },
       },
-      resolve: (_, { first, after }, __, info) => {
-        // Check if name field is requested
-        const nameFieldRequested = info.fieldNodes[0].selectionSet.selections
-          .find(selection => selection.name.value === 'edges')
-          ?.selectionSet.selections
-          .find(selection => selection.name.value === 'node')
-          ?.selectionSet.selections
-          .some(selection => selection.name.value === 'name');
-
-        console.log("resolve");
-
-        if (!nameFieldRequested) {
-          console.log("empty");
-          return {
-            edges: [],
-            pageInfo: {
-              hasNextPage: false,
-              hasPreviousPage: false,
-              startCursor: null,
-              endCursor: null,
-            },
-          };
+      resolve: (_, { first, after, search }) => {
+        let filteredData = peopleData;
+        if (search) {
+          const lowerSearch = search.toLowerCase();
+          filteredData = peopleData.filter(person =>
+            person.name.toLowerCase().includes(lowerSearch)
+          );
         }
-
-        const total = peopleData.length;
+        const total = filteredData.length;
         const startIndex = after ? decodeCursor(after) + 1 : 0;
+
+        // alert("Resolving!")
 
         if (first === 0) {
           return {
@@ -112,7 +99,7 @@ const QueryType = new GraphQLObjectType({
           };
         }
 
-        const slice = peopleData.slice(startIndex, first ? startIndex + first : undefined);
+        const slice = filteredData.slice(startIndex, first ? startIndex + first : undefined);
 
         const edges = slice.map((person, i) => ({
           node: person,
